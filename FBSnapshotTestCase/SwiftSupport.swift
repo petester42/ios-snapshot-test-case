@@ -10,19 +10,20 @@
 
 public extension FBSnapshotTestCase {
   public func FBSnapshotVerifyView(view: UIView, identifier: String = "", suffixes: NSOrderedSet = FBSnapshotTestCaseDefaultSuffixes(), file: String = __FILE__, line: UInt = __LINE__) {
-    let envReferenceImageDirectory = NSProcessInfo.processInfo().environment["FB_REFERENCE_IMAGE_DIR"] as? String
-    var error: NSError?
+    let envReferenceImageDirectory = NSProcessInfo.processInfo().environment["FB_REFERENCE_IMAGE_DIR"]
 
     if let envReferenceImageDirectory = envReferenceImageDirectory {
       for suffix in suffixes {
         let referenceImagesDirectory = "\(envReferenceImageDirectory)\(suffix)"
-        let comparisonSuccess = compareSnapshotOfView(view, referenceImagesDirectory: referenceImagesDirectory, identifier: identifier, tolerance: 0, error: &error)
-        if comparisonSuccess || recordMode {
-          break
+        do {
+            try compareSnapshotOfView(view, referenceImagesDirectory: referenceImagesDirectory, identifier: identifier, tolerance: 0)
+            if recordMode {
+                break
+            }
+            assert(recordMode == false, message: "Test ran in record mode. Reference image is now saved. Disable record mode to perform an actual snapshot comparison!", file: file, line: line)
+        } catch {
+            assert(true, message: "Snapshot comparison failed: \(error)", file: file, line: line)
         }
-
-        assert(comparisonSuccess, message: "Snapshot comparison failed: \(error)", file: file, line: line)
-        assert(recordMode == false, message: "Test ran in record mode. Reference image is now saved. Disable record mode to perform an actual snapshot comparison!", file: file, line: line)
       }
     } else {
       assert(false, message: "Missing value for referenceImagesDirectory - Set FB_REFERENCE_IMAGE_DIR as Environment variable in your scheme.", file: file, line: line)
@@ -30,20 +31,20 @@ public extension FBSnapshotTestCase {
   }
 
   public func FBSnapshotVerifyLayer(layer: CALayer, identifier: String = "", suffixes: NSOrderedSet = FBSnapshotTestCaseDefaultSuffixes(), file: String = __FILE__, line: UInt = __LINE__) {
-    let envReferenceImageDirectory = NSProcessInfo.processInfo().environment["FB_REFERENCE_IMAGE_DIR"] as? String
-    var error: NSError?
-    var comparisonSuccess = false
+    let envReferenceImageDirectory = NSProcessInfo.processInfo().environment["FB_REFERENCE_IMAGE_DIR"]
 
     if let envReferenceImageDirectory = envReferenceImageDirectory {
       for suffix in suffixes {
         let referenceImagesDirectory = "\(envReferenceImageDirectory)\(suffix)"
-        comparisonSuccess = compareSnapshotOfLayer(layer, referenceImagesDirectory: referenceImagesDirectory, identifier: identifier, tolerance: 0, error: &error)
-        if comparisonSuccess || recordMode {
-          break
+        do {
+            try compareSnapshotOfLayer(layer, referenceImagesDirectory: referenceImagesDirectory, identifier: identifier, tolerance: 0)
+            if recordMode {
+                break
+            }
+            assert(recordMode == false, message: "Test ran in record mode. Reference image is now saved. Disable record mode to perform an actual snapshot comparison!", file: file, line: line)
+        } catch {
+            assert(true, message: "Snapshot comparison failed: \(error)", file: file, line: line)
         }
-
-        assert(comparisonSuccess, message: "Snapshot comparison failed: \(error)", file: file, line: line)
-        assert(recordMode == false, message: "Test ran in record mode. Reference image is now saved. Disable record mode to perform an actual snapshot comparison!", file: file, line: line)
       }
     } else {
       XCTFail("Missing value for referenceImagesDirectory - Set FB_REFERENCE_IMAGE_DIR as Environment variable in your scheme.")
